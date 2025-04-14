@@ -12,6 +12,7 @@ services:
   mongo:
     image: mongo
     container_name: chat-mongo
+    command: ["--storageEngine", "wiredTiger"]
     ports:
       - "27017:27017"
     restart: always
