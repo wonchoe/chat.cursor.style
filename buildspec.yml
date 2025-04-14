@@ -1,0 +1,13 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - echo Build complete
+      - echo "== CONTENTS =="
+      - find . -type f | sort
+      - echo "AppSpec file:"
+      - cat appspec.yml || echo "❌ appspec.yml not found"
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: no

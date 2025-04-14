@@ -1,0 +1,10 @@
+exit
+db.users.updateOne( { extensionId: '03a0c6a9-8773-4338-8c75-891961e9a8ee' }, { $set: { avatar: 'cursorstyle' } } )
+db.users.find().pretty()
+db.users.deleteMany({})
+db.users.find().pretty()
+db.users.updateOne( { extensionId: '092171c7-f086-4ff3-b2f1-c7697891433c' }, { $set: { avatar: 'cursorstyle' } } )
+db.users.find().pretty()
+db.users.deleteMany({})
+db.users.find().pretty()
+use chatdb
