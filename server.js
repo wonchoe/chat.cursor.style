@@ -135,6 +135,7 @@ async function setupIndexes() {
 
 function makeFuzzyPattern(wordOrPhrase) {
   return wordOrPhrase
+    .replace(/\s+/g, '') // 🧼 прибирає пробіли з самого слова
     .split('')
     .map(c => {
       if (c.match(/\s/)) return '[\\s\\-\\.]{1,}';
