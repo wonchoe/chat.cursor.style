@@ -85,7 +85,8 @@ const badWords = [
   "Asesinato", "asno", "bastardo", "Bollera", "Cabrón", "Caca", "Chupada", "Chupapollas", "Chupetón", "concha", "Concha de tu madre", "Coño", "Coprofagía", "Culo", "Drogas", "Esperma", "Fiesta de salchichas", "Follador", "Follar", "Gilipichis", "Gilipollas", "Hacer una paja", "Haciendo el amor", "Heroína", "Hija de puta", "Hijaputa", "Hijo de puta", "Hijoputa", "Idiota", "Imbécil", "infierno", "Jilipollas", "Kapullo", "Lameculos", "Maciza", "Macizorra", "maldito", "Mamada", "Marica", "Maricón", "Mariconazo", "martillo", "Mierda", "Nazi", "Orina", "Pedo", "Pendejo", "Pervertido", "Pezón", "Pinche", "Pis", "Prostituta", "Puta", "Racista", "Ramera", "Sádico", "Semen", "Sexo", "Sexo oral", "Soplagaitas", "Soplapollas", "Tetas grandes", "Tía buena", "Travesti", "Trio", "Verga", "vete a la mierda", "Vulva"
 ];
 
-const badWordsRegex = new RegExp(badWords.map(makeFuzzyPattern).join('|'), 'iu');
+const normalizedBadWords = badWords.map(w => w.replace(/\s+/g, '').toLowerCase());
+const badWordsRegex = new RegExp(normalizedBadWords.map(makeFuzzyPattern).join('|'), 'iu');
 
 const roomUserCounts = {};
 const ENCRYPTION_KEY = crypto.createHash('sha256').update('451585').digest(); // 32 bytes
@@ -406,16 +407,12 @@ function shallowEqual(obj1, obj2) {
 }
 
 function checkBadWords(text) {
-  text = ` ${text} `;
   const cleaned = text
-      .toLowerCase()
-      .replace(/[^\p{L}\s]/gu, '')   
-      .replace(/\s+/g, ' ')
-      .trim();
-  const words = cleaned.split(' ');
-  return words.some(word => badWords.includes(word));
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[^\p{L}]/gu, '');
+  return badWordsRegex.test(cleaned);
 }
-
 
 function checkUserName(name) {
   let clean = name.trim();
