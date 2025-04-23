@@ -419,7 +419,11 @@ function checkBadWords(text) {
 function checkUserName(name) {
   let clean = name.trim();
   clean = clean.replace(/\s+/g, '').toLowerCase();
-  if (checkBadWords(name)) return 'Contain bad words';
+
+  const normalized = name.replace(/\s+/g, '').toLowerCase();
+  if (checkBadWords(normalized)) return 'Contain bad words';
+
+//  if (checkBadWords(name)) return 'Contain bad words';
   if (knownTldRegex.test(clean)) return 'Contain domain name';
   if (dangerousChars.test(clean)) return 'Contains dangerous characters';
   if (escapedDangerous.test(clean)) return 'Contains encoded dangerous characters';
