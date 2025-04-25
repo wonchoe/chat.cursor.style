@@ -869,9 +869,11 @@ io.on('connection', async (socket) => {
   socket.on('chatMessage', withRateLimit(limiters.chatMessage, socket, async (data, callback) => {
     try {
 
+      console.log('[chatMessage] socket.extensionId:', socket.extensionId);
       if (await isUserBanned(socket.extensionId)) {
         socket.emit('rateLimit', { reason: '🚫 You are banned.' });
-        return socket.disconnect(true);
+        socket.disconnect(true);
+        return callback?.({ success: false, reason: 'Socker not found' });
       }  
             
       data = data.payload;
