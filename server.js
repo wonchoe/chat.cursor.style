@@ -508,7 +508,6 @@ io.on('connection', async (socket) => {
     console.error('[BAN] Check error:', err);
   }
 
-
   setRoomCountTimer();
   console.log('🔌 New client connected');
 
@@ -728,8 +727,7 @@ io.on('connection', async (socket) => {
   }));
 
   socket.on('joinRoom', withRateLimit(limiters.joinRoom, socket, async (data, cb) => {
-    try {      
-      
+    try { 
       const extensionId = data?.extension_id;
       let roomId = data.roomId ?? 'general';
       let userData = data.userData;
@@ -825,8 +823,57 @@ io.on('connection', async (socket) => {
     }
   }));
 
+  socket.on('banUserByUserId', async (data, callback) => {
+    try {
+      const { userId } = data || {};
+  
+      if (!userId || typeof userId !== 'string') {
+        return callback?.({ success: false, reason: 'Invalid userId' });
+      }
+  
+      const user = await usersCollection.findOne({ userId });
+  
+      if (!user) {
+        return callback?.({ success: false, reason: 'User not found' });
+      }
+  
+      const extensionId = user.extensionId;
+  
+      if (!extensionId) {
+        return callback?.({ success: false, reason: 'ExtensionId missing for user' });
+      }
+  
+      const banDurationMs = 1 * 24 * 60 * 60 * 1000; // 7 днів бан
+      await usersCollection.updateOne(
+        { extensionId },
+        { $set: { bannedUntil: new Date(Date.now() + banDurationMs) } }
+      );
+  
+      // Відключаємо активні сокети юзера, якщо є
+      for (const [id, s] of io.sockets.sockets) {
+        if (s.extensionId === extensionId) {
+          console.log(`🔌 Disconnecting banned user: ${extensionId}`);
+          s.emit('rateLimit', { reason: '🚫 You are banned.' });
+          s.disconnect(true);
+        }
+      }
+  
+      return callback?.({ success: true });
+    } catch (err) {
+      console.error('[SERVER] banUserByUserId error:', err);
+      return callback?.({ success: false, reason: 'Server error' });
+    }
+  });
+
+  
   socket.on('chatMessage', withRateLimit(limiters.chatMessage, socket, async (data, callback) => {
     try {
+
+      if (await isUserBanned(socket.extensionId)) {
+        socket.emit('rateLimit', { reason: '🚫 You are banned.' });
+        return socket.disconnect(true);
+      }  
+            
       data = data.payload;
 
       if (detectMaliciousInput(data)) {
@@ -872,7 +919,7 @@ io.on('connection', async (socket) => {
         console.warn(`[SRV] chatMessage rejected: user not found for extensionId ${socket.extensionId}`);
         return callback?.({ success: false, reason: 'User not found or deleted' });
       }
-            
+
       const fullMessage = {
         messageId: data.messageId,
         text: data.text,
