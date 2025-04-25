@@ -868,6 +868,11 @@ io.on('connection', async (socket) => {
       }
 
       const user = await getUserFromDB(socket.extensionId);
+      if (!user) {
+        console.warn(`[SRV] chatMessage rejected: user not found for extensionId ${socket.extensionId}`);
+        return callback?.({ success: false, reason: 'User not found or deleted' });
+      }
+            
       const fullMessage = {
         messageId: data.messageId,
         text: data.text,
