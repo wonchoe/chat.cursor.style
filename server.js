@@ -456,6 +456,19 @@ function setRoomCountTimer() {
   }, 10 * 1000);
 }
 
+async function isUserBanned(extensionId) {
+  if (!extensionId) {
+    console.warn('[isUserBanned] Missing extensionId');
+    return false;
+  }
+  const user = await usersCollection.findOne({ extensionId });
+  if (!user) {
+    console.warn('[isUserBanned] No user found for', extensionId);
+    return false;
+  }
+  if (!user.bannedUntil) return false;
+  return new Date() < new Date(user.bannedUntil);
+}
 
 function validateUserDataObject(userData) {
   if (typeof userData !== 'object' || userData === null) {
