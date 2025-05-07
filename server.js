@@ -12,7 +12,7 @@ const app = express();
 
 async function checkToxicity(fullText) {
   try {
-    const res = await axios.post('http://localhost:8002/check', { text: fullText });
+    const res = await axios.post('http://tox-api:8002/check', { text: fullText });
     const result = res.data;
 
     console.log('[🧪 TOXIC DEBUG]', fullText, '=>', result); // 👈 Додаємо лог тут
