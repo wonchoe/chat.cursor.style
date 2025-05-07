@@ -930,7 +930,7 @@ io.on('connection', async (socket) => {
         return callback?.({ success: false, reason: 'Unauthorized: not registered' });
       }
 
-      const validation = validateMessage(data?.text);
+      const validation = await validateMessage(data?.text);
       console.log(validation);
       if (!validation.valid) {
         return callback?.({ success: false, reason: validation.reason });
