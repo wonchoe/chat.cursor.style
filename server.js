@@ -316,9 +316,7 @@ async function validateMessage(text) {
   const toxicity = await checkToxicity(fullText);
   
   if (!toxicity.valid) {
-    console.log('[🧪 TOXIC RESULT]', toxicity); // 👈 лог результату
-    console.log('[🧪 TOXIC RESULT]', toxicity.valid); // 👈 лог результату
-    return { valid: false, reason: 'Bad language detected' };
+    return { valid: false, reason: 'Inappropriate language is not allowed' };
   }
 
   return { valid: true };
