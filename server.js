@@ -5,9 +5,26 @@ const tls = require('tls');
 const https = require('https');
 const { Server } = require('socket.io');
 const { MongoClient } = require('mongodb');
+const axios = require('axios');
 
 // 🌐 Express
 const app = express();
+
+async function checkToxicity(fullText) {
+  try {
+    const res = await axios.post('http://localhost:8002/check', { text: fullText });
+    const result = res.data;
+
+    if (result.toxic || result.insult || result.obscene || result.identity_attack) {
+      return { valid: false, reason: 'Inappropriate language is not allowed' };
+    }
+    return { valid: true };
+  } catch (err) {
+    console.error('⚠️ Toxicity API error:', err.message);
+    // Не блокуємо, якщо API недоступний
+    return { valid: true };
+  }
+}
 
 // 🧠 SNI логіка — різні сертифікати для localhost / production
 const sslOptions = {
@@ -267,7 +284,7 @@ function decrypt(encryptedText) {
   return decrypted.toString('utf8');
 }
 
-function validateMessage(text) {
+async function validateMessage(text) {
   let fullText = text;
   if (!text || typeof text !== 'string') {
     return { valid: false, reason: 'Invalid text input' };
@@ -293,7 +310,9 @@ function validateMessage(text) {
   if (mailtoPattern.test(trimmed)) return { valid: false, reason: 'mailto: links are not allowed' };
   if (linkPattern.test(trimmed) || knownTldRegex.test(trimmed)) return { valid: false, reason: 'Links are not allowed' };
   if (emailPattern.test(trimmed)) return { valid: false, reason: 'Emails are not allowed' };
-  if (checkBadWords(fullText)) return { valid: false, reason: 'Inappropriate language is not allowed' };
+    
+  const toxicity = await checkToxicity(fullText);
+  if (!toxicity.valid) return toxicity;
 
   return { valid: true };
 }
@@ -406,20 +425,14 @@ function shallowEqual(obj1, obj2) {
   return true;
 }
 
-function checkBadWords(text) {
-  const cleaned = text
-    .toLowerCase()
-    .replace(/\s+/g, '')
-    .replace(/[^\p{L}]/gu, '');
-  return badWordsRegex.test(cleaned);
-}
-
-function checkUserName(name) {
+async function checkUserName(name) {
   let clean = name.trim();
   clean = clean.replace(/\s+/g, '').toLowerCase();
 
   const normalized = name.replace(/ /g, '');
-  if (checkBadWords(normalized)) return 'Contain bad words';
+  
+  const toxicity = await checkToxicity(normalized);
+  if (!toxicity.valid) return toxicity; 
 
 //  if (checkBadWords(name)) return 'Contain bad words';
   if (knownTldRegex.test(clean)) return 'Contain domain name';
