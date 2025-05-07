@@ -439,9 +439,11 @@ async function checkUserName(name) {
   const toxicity = await checkToxicity(normalized);
   
   if (!toxicity.valid) {
+    console.log('[❗️TOXIC USERNAME DETECTED]', normalized, toxicity);
     return 'Inappropriate language is not allowed';
   }
 
+  
 //  if (checkBadWords(name)) return 'Contain bad words';
   if (knownTldRegex.test(clean)) return 'Contain domain name';
   if (dangerousChars.test(clean)) return 'Contains dangerous characters';
@@ -747,7 +749,7 @@ io.on('connection', async (socket) => {
     if (!isSafeMongoInput(username)) return cb({ available: false, reason: 'Unsafe characters' });
 
 
-    const reason = checkUserName(username); // використовуємо твою перевірку
+    const reason = await checkUserName(username); // використовуємо твою перевірку
     if (reason) {
       return cb({ available: false, reason });
     }
