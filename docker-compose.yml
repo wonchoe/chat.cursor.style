@@ -32,7 +32,7 @@ services:
   tox-api:
     image: tox-api
     build:
-      context: ./toxic-filter  # або . якщо в корені
+      context: ../toxic-filter  # або . якщо в корені
     ports:
       - "8002:8002"
     restart: always
