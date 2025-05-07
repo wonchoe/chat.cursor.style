@@ -437,7 +437,10 @@ async function checkUserName(name) {
   const normalized = name.replace(/ /g, '');
   
   const toxicity = await checkToxicity(normalized);
-  if (!toxicity.valid) return toxicity; 
+  
+  if (!toxicity.valid) {
+    return { valid: false, reason: 'Inappropriate language is not allowed' };
+  }
 
 //  if (checkBadWords(name)) return 'Contain bad words';
   if (knownTldRegex.test(clean)) return 'Contain domain name';
