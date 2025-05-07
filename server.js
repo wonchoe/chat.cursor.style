@@ -314,9 +314,12 @@ async function validateMessage(text) {
   if (emailPattern.test(trimmed)) return { valid: false, reason: 'Emails are not allowed' };
     
   const toxicity = await checkToxicity(fullText);
-  console.log('[🧪 TOXIC RESULT]', toxicity); // 👈 лог результату
   
-  if (!toxicity.valid) return toxicity;
+  if (!toxicity.valid) {
+    console.log('[🧪 TOXIC RESULT]', toxicity); // 👈 лог результату
+    console.log('[🧪 TOXIC RESULT]', toxicity.valid); // 👈 лог результату
+    return { valid: false, reason: 'Bad language detected' };
+  }
 
   return { valid: true };
 }
