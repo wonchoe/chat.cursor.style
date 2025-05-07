@@ -5,9 +5,12 @@ services:
       - "8443:8443"
     depends_on:
       - mongo
+      - tox-api
     environment:
       - MONGO_URL=mongodb://mongo:27017/chatdb
     restart: always
+    networks:
+      - chatnet
 
   mongo:
     image: mongo
@@ -22,4 +25,19 @@ services:
         target: /data/db
       - type: bind
         source: ./mongo-init
-        target: /docker-entrypoint-initdb.d        
+        target: /docker-entrypoint-initdb.d
+    networks:
+      - chatnet
+
+  tox-api:
+    image: tox-api
+    build:
+      context: ./toxic-filter  # або . якщо в корені
+    ports:
+      - "8002:8002"
+    restart: always
+    networks:
+      - chatnet
+
+networks:
+  chatnet:
