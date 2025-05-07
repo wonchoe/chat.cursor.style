@@ -628,7 +628,7 @@ io.on('connection', async (socket) => {
     let usernameError = null;
 
     username = username.trim();
-    usernameError = checkUserName(username);
+    usernameError = await checkUserName(username);
     if (usernameError) {
       return callback?.({ success: false, reason: usernameError });
     }
