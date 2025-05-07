@@ -15,16 +15,18 @@ async function checkToxicity(fullText) {
     const res = await axios.post('http://localhost:8002/check', { text: fullText });
     const result = res.data;
 
+    console.log('[🧪 TOXIC DEBUG]', fullText, '=>', result); // 👈 Додаємо лог тут
+
     if (result.toxic || result.insult || result.obscene || result.identity_attack) {
       return { valid: false, reason: 'Inappropriate language is not allowed' };
     }
     return { valid: true };
   } catch (err) {
     console.error('⚠️ Toxicity API error:', err.message);
-    // Не блокуємо, якщо API недоступний
     return { valid: true };
   }
 }
+
 
 // 🧠 SNI логіка — різні сертифікати для localhost / production
 const sslOptions = {
@@ -312,6 +314,8 @@ async function validateMessage(text) {
   if (emailPattern.test(trimmed)) return { valid: false, reason: 'Emails are not allowed' };
     
   const toxicity = await checkToxicity(fullText);
+  console.log('[🧪 TOXIC RESULT]', toxicity); // 👈 лог результату
+  
   if (!toxicity.valid) return toxicity;
 
   return { valid: true };
