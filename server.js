@@ -931,6 +931,7 @@ io.on('connection', async (socket) => {
       }
 
       const validation = validateMessage(data?.text);
+      console.log(validation);
       if (!validation.valid) {
         return callback?.({ success: false, reason: validation.reason });
       }
