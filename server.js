@@ -439,7 +439,7 @@ async function checkUserName(name) {
   const toxicity = await checkToxicity(normalized);
   
   if (!toxicity.valid) {
-    return { valid: false, reason: 'Inappropriate language is not allowed' };
+    return 'Inappropriate language is not allowed';
   }
 
 //  if (checkBadWords(name)) return 'Contain bad words';
