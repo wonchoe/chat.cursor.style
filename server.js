@@ -613,6 +613,28 @@ io.on('connection', async (socket) => {
     }
   });
 
+
+  socket.on('deleteMessagesById', async ({ messageIds }, callback) => {
+    if (!Array.isArray(messageIds) || messageIds.length === 0) {
+      return callback?.({ success: false, reason: 'No messageIds provided' });
+    }
+
+    try {
+      // Видаляємо з бази
+      await messagesCollection.deleteMany({ messageId: { $in: messageIds } });
+
+      // Розсилаємо всім клієнтам, щоб видалили на фронті
+      for (const messageId of messageIds) {
+        io.emit('removeMessageById', { messageId });
+      }
+
+      callback?.({ success: true });
+    } catch (err) {
+      console.error('[deleteMessagesById] Error:', err);
+      callback?.({ success: false, reason: 'Server error' });
+    }
+  });
+
   socket.on('registerUser', withRateLimit(limiters.registerUser, socket, async ({ username, extensionId, avatar, countryCode, isNewUser, currentRoomId }, callback) => {
     if (!username || !extensionId || typeof username !== 'string' || typeof extensionId !== 'string') {
       return callback?.({ success: false, reason: 'Invalid input data' });
