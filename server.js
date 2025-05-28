@@ -528,7 +528,7 @@ io.on('connection', async (socket) => {
     socket.emit('error', { reason: 'MongoDB not ready' });
     return socket.disconnect(true);
   }
-    
+
   if (!roomsCollection) {
     console.error('❌ roomsCollection is not initialized!');
   } else {
@@ -621,30 +621,6 @@ io.on('connection', async (socket) => {
     }
   });
 
-socket.on('deleteMessagesById', async ({ messageIds }, callback) => {
-  console.log('[SRV] deleteMessagesById CALLED', messageIds);
-
-  if (!Array.isArray(messageIds) || messageIds.length === 0) {
-    console.log('[SRV] BAD ARGUMENTS', messageIds);
-    return callback?.({ success: false, reason: 'No messageIds provided' });
-  }
-
-  try {
-    console.log('[SRV] Before deleteMany');
-    await messagesCollection.deleteMany({ messageId: { $in: messageIds } });
-    console.log('[SRV] After deleteMany');
-
-    for (const messageId of messageIds) {
-      io.emit('removeMessageById', { messageId });
-    }
-    console.log('[SRV] Before callback');
-    callback?.({ success: true });
-    console.log('[SRV] After callback');
-  } catch (err) {
-    console.error('[deleteMessagesById] Error:', err);
-    callback?.({ success: false, reason: 'Server error' });
-  }
-});
 
   socket.on('registerUser', withRateLimit(limiters.registerUser, socket, async ({ username, extensionId, avatar, countryCode, isNewUser, currentRoomId }, callback) => {
     if (!username || !extensionId || typeof username !== 'string' || typeof extensionId !== 'string') {
@@ -934,7 +910,11 @@ socket.on('deleteMessagesById', async ({ messageIds }, callback) => {
     }
   });
 
-  
+
+socket.on('deleteMessagesById', (data, cb) => {
+  console.log('[SRV] deleteMessagesById RAW', data);
+  cb?.({ success: true });
+});
   socket.on('chatMessage', withRateLimit(limiters.chatMessage, socket, async (data, callback) => {
     try {
 
