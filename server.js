@@ -7,6 +7,8 @@ const { Server } = require('socket.io');
 const { MongoClient } = require('mongodb');
 const axios = require('axios');
 
+let mongoReady = false;
+
 // 🌐 Express
 const app = express();
 
@@ -329,6 +331,7 @@ async function getUserFromDB(extensionId) {
 
 MongoClient.connect(mongoUrl)
   .then(client => {
+    mongoReady = true;
     console.log('✅ Connected to MongoDB');
     db = client.db(dbName);
     usersCollection = db.collection('users');
@@ -521,6 +524,11 @@ function validateUserDataObject(userData) {
 
 
 io.on('connection', async (socket) => {
+  if (!mongoReady) {
+    socket.emit('error', { reason: 'MongoDB not ready' });
+    return socket.disconnect(true);
+  }
+    
   if (!roomsCollection) {
     console.error('❌ roomsCollection is not initialized!');
   } else {
@@ -613,27 +621,30 @@ io.on('connection', async (socket) => {
     }
   });
 
+socket.on('deleteMessagesById', async ({ messageIds }, callback) => {
+  console.log('[SRV] deleteMessagesById CALLED', messageIds);
 
-  socket.on('deleteMessagesById', async ({ messageIds }, callback) => {
-    if (!Array.isArray(messageIds) || messageIds.length === 0) {
-      return callback?.({ success: false, reason: 'No messageIds provided' });
+  if (!Array.isArray(messageIds) || messageIds.length === 0) {
+    console.log('[SRV] BAD ARGUMENTS', messageIds);
+    return callback?.({ success: false, reason: 'No messageIds provided' });
+  }
+
+  try {
+    console.log('[SRV] Before deleteMany');
+    await messagesCollection.deleteMany({ messageId: { $in: messageIds } });
+    console.log('[SRV] After deleteMany');
+
+    for (const messageId of messageIds) {
+      io.emit('removeMessageById', { messageId });
     }
-
-    try {
-      // Видаляємо з бази
-      await messagesCollection.deleteMany({ messageId: { $in: messageIds } });
-
-      // Розсилаємо всім клієнтам, щоб видалили на фронті
-      for (const messageId of messageIds) {
-        io.emit('removeMessageById', { messageId });
-      }
-
-      callback?.({ success: true });
-    } catch (err) {
-      console.error('[deleteMessagesById] Error:', err);
-      callback?.({ success: false, reason: 'Server error' });
-    }
-  });
+    console.log('[SRV] Before callback');
+    callback?.({ success: true });
+    console.log('[SRV] After callback');
+  } catch (err) {
+    console.error('[deleteMessagesById] Error:', err);
+    callback?.({ success: false, reason: 'Server error' });
+  }
+});
 
   socket.on('registerUser', withRateLimit(limiters.registerUser, socket, async ({ username, extensionId, avatar, countryCode, isNewUser, currentRoomId }, callback) => {
     if (!username || !extensionId || typeof username !== 'string' || typeof extensionId !== 'string') {
