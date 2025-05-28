@@ -911,10 +911,29 @@ io.on('connection', async (socket) => {
   });
 
 
-socket.on('deleteMessagesById', (data, cb) => {
-  console.log('[SRV] deleteMessagesById RAW', data);
-  cb?.({ success: true });
-});
+  socket.on('deleteMessagesById', async (data, cb) => {
+    console.log('[SRV] deleteMessagesById RAW', data);
+
+    try {
+      // 1. Видаляємо повідомлення з MongoDB
+      if (Array.isArray(data.messageIds) && data.messageIds.length > 0) {
+        await messagesCollection.deleteMany({ messageId: { $in: data.messageIds } });
+
+        // 2. Розсилаємо всім клієнтам, щоб видалили це на фронті
+        for (const messageId of data.messageIds) {
+          io.emit('removeMessageById', { messageId });
+        }
+
+        cb?.({ success: true });
+      } else {
+        cb?.({ success: false, reason: 'No messageIds provided' });
+      }
+    } catch (err) {
+      console.error('[deleteMessagesById] Error:', err);
+      cb?.({ success: false, reason: 'Server error' });
+    }
+  });
+
   socket.on('chatMessage', withRateLimit(limiters.chatMessage, socket, async (data, callback) => {
     try {
 
