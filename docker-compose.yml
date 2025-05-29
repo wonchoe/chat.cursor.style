@@ -2,7 +2,7 @@ services:
   server:
     build: .
     ports:
-      - "8443:8443"
+      - 8443:8443
     depends_on:
       - mongo
       - tox-api
@@ -17,7 +17,7 @@ services:
     container_name: chat-mongo
     command: ["--storageEngine", "wiredTiger"]
     ports:
-      - "27017:27017"
+      - 27017:27017
     restart: always
     volumes:
       - type: bind
@@ -30,11 +30,9 @@ services:
       - chatnet
 
   tox-api:
-    image: tox-api
-    build:
-      context: ../toxic-filter  # або . якщо в корені
+    image: wonchoe/toxic-filter:latest
     ports:
-      - "8002:8002"
+      - 8002:8002
     restart: always
     networks:
       - chatnet
