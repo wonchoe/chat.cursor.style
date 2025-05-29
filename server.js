@@ -9,7 +9,6 @@ const axios = require('axios');
 
 let mongoReady = false;
 
-// 🌐 Express
 const app = express();
 
 async function checkToxicity(fullText) {
@@ -17,7 +16,7 @@ async function checkToxicity(fullText) {
     const res = await axios.post('http://tox-api:8002/check', { text: fullText });
     const result = res.data;
 
-    console.log('[🧪 TOXIC DEBUG]', fullText, '=>', result); // 👈 Додаємо лог тут
+    console.log('[🧪 TOXIC DEBUG]', fullText, '=>', result);
 
     if (result.toxic || result.insult || result.obscene || result.identity_attack) {
       return { valid: false, reason: 'Inappropriate language is not allowed' };
@@ -25,12 +24,11 @@ async function checkToxicity(fullText) {
     return { valid: true };
   } catch (err) {
     console.error('⚠️ Toxicity API error:', err.message);
-    return { valid: true };
+    return { valid: false, reason: 'Sorry, the message moderation service is temporarily unavailable. Please try again later.'  };
   }
 }
 
 
-// 🧠 SNI логіка — різні сертифікати для localhost / production
 const sslOptions = {
   SNICallback: (servername, cb) => {
     let ctx;
