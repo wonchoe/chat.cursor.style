@@ -6,7 +6,7 @@ const https = require('https');
 const { Server } = require('socket.io');
 const { MongoClient } = require('mongodb');
 const axios = require('axios');
-const { checkToxicClaude } = require('./toxicClaudeAI');
+const { toxicClaudeAI } = require('./toxicClaudeAI');
 
 let mongoReady = false;
 
@@ -24,7 +24,7 @@ async function checkToxicity(fullText) {
     }
 
     try {
-      const aiToxic = await checkToxicClaude(fullText);
+      const aiToxic = await toxicClaudeAI(fullText);
       if (aiToxic) {
         return { valid: false, reason: 'Inappropriate language is not allowed' };
       }
