@@ -14,7 +14,10 @@ const CHATLOG_ENDPOINT = 'https://cursor.style/chatlogs';
 const openrouterEnabled = !!OPENROUTER_KEY;
 
 async function toxicClaudeAI(text) {
-  if (!openrouterEnabled) return false;
+  if (!openrouterEnabled) { 
+    console.log('NO API KEY');
+    return false;
+  }
 
   try {
     const payload = {
@@ -45,18 +48,27 @@ async function toxicClaudeAI(text) {
 
     const reply = response.data.choices[0].message.content.trim().toLowerCase();
     const isToxic = reply.includes('wonchoe');
+    
+    console.log('[🧠 CLAUDE DEBUG]', text, '=>', reply, '| toxic:', isToxic);
 
     if (isToxic) {
-      await axios.post(CHATLOG_ENDPOINT, {
-        toxic: true,
-        source: 'openrouter-check',
-        fullText: text
-      });
+      console.log('[🚫 CLAUDE MARKED TOXIC]', text);
+
+      try {
+        await axios.post(CHATLOG_ENDPOINT, {
+          toxic: true,
+          source: 'openrouter-check',
+          fullText: text
+        });
+      } catch (logErr) {
+        console.warn('[⚠️ Claude log post failed]', logErr.message);
+      }
     }
 
     return isToxic;
   } catch (err) {
     try {
+      console.error('[chatlogs failed]', err.message);
       await axios.post(CHATLOG_ENDPOINT, {
         error: true,
         source: 'openrouter-check',

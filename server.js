@@ -26,6 +26,7 @@ async function checkToxicity(fullText) {
     try {
       const aiToxic = await toxicClaudeAI(fullText);
       if (aiToxic) {
+        console.warn('AI result toxic');
         return { valid: false, reason: 'Inappropriate language is not allowed' };
       }
     } catch (aiErr) {
