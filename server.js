@@ -23,10 +23,15 @@ async function checkToxicity(fullText) {
       return { valid: false, reason: 'Inappropriate language is not allowed' };
     }
 
-    const aiToxic = await checkToxicClaude(fullText);
-    if (aiToxic) {
-      return { valid: false, reason: 'Inappropriate language is not allowed' };
+    try {
+      const aiToxic = await checkToxicClaude(fullText);
+      if (aiToxic) {
+        return { valid: false, reason: 'Inappropriate language is not allowed' };
+      }
+    } catch (aiErr) {
+      console.warn('⚠️ Claude AI check failed, skipping:', aiErr.message);
     }
+
 
     return { valid: true };
   } catch (err) {

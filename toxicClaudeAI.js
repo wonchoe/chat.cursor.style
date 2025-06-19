@@ -13,7 +13,7 @@ const CHATLOG_ENDPOINT = 'https://cursor.style/chatlogs';
 
 const openrouterEnabled = !!OPENROUTER_KEY;
 
-async function checkWithOpenRouter(text) {
+async function toxicClaudeAI(text) {
   if (!openrouterEnabled) return false;
 
   try {
@@ -71,5 +71,5 @@ async function checkWithOpenRouter(text) {
 }
 
 module.exports = {
-  checkWithOpenRouter
+  toxicClaudeAI
 };
