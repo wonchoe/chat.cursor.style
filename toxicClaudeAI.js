@@ -47,7 +47,7 @@ async function toxicClaudeAI(text) {
     });
 
     const reply = response.data.choices[0].message.content.trim().toLowerCase();
-    const isToxic = reply.includes('wonchoe');
+    const isToxic = reply.startsWith('wonch');
     
     console.log('[🧠 CLAUDE DEBUG]', text, '=>', reply, '| toxic:', isToxic);
 
