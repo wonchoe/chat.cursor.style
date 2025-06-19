@@ -24,6 +24,7 @@ async function toxicClaudeAI(text) {
       model: 'anthropic/claude-3-haiku',
       temperature: 0.0,
       max_tokens: 30,
+      seed: Date.now(),
       messages: [
         {
           role: 'system',
