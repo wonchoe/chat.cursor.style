@@ -23,7 +23,7 @@ async function checkToxicity(fullText) {
       return { valid: false, reason: 'Inappropriate language is not allowed' };
     }
 
-    const aiToxic = await checkWithOpenRouter(fullText);
+    const aiToxic = await checkToxicClaude(fullText);
     if (aiToxic) {
       return { valid: false, reason: 'Inappropriate language is not allowed' };
     }
@@ -31,7 +31,10 @@ async function checkToxicity(fullText) {
     return { valid: true };
   } catch (err) {
     console.error('⚠️ Toxicity API error:', err.message);
-    return { valid: false, reason: 'Sorry, the message moderation service is temporarily unavailable. Please try again later.' };
+    return {
+      valid: false,
+      reason: 'Sorry, the message moderation service is temporarily unavailable. Please try again later.'
+    };
   }
 }
 

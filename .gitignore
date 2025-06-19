@@ -1,2 +1,3 @@
 mongo_data/
 .env
+ssl/
