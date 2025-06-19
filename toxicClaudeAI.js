@@ -22,7 +22,7 @@ async function toxicClaudeAI(text) {
   try {
     const payload = {
       model: 'anthropic/claude-3-haiku',
-      temperature: 0.0,
+      temperature: 0.2,
       max_tokens: 30,
       seed: Date.now(),
       messages: [
@@ -33,7 +33,7 @@ async function toxicClaudeAI(text) {
         },
         {
           role: 'user',
-          content: `Message: "${text}"`
+          content: `Message: "${text}"\nTS:${Date.now()}`
         }
       ]
     };
