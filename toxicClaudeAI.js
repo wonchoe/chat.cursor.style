@@ -23,12 +23,12 @@ async function toxicClaudeAI(text) {
     const payload = {
       model: 'anthropic/claude-3-haiku',
       temperature: 0.0,
-      max_tokens: 2,
+      max_tokens: 30,
       messages: [
         {
           role: 'system',
           content:
-            "You are a strict content moderation filter for a children's app (ages 4–15). If a message contains profanity, hate speech, insults, sexual or erotic content, even implied or in slang or hidden form (such as double meaning, innuendo, sexual puns, suggestive phrases), or anything inappropriate — reply: wonchoe. Otherwise reply '1'. You must reply only with wonchoe or 1 — no explanation, no punctuation, no quotes, no reasoning."
+            "You are a content moderation filter for a children's app (ages 4–15). Mark a message toxic ONLY if it contains clear profanity, hate speech, insults, or explicit content. Do NOT mark educational mentions like 'bad words' or polite questions. Reply ONLY with 'wonchoe' if toxic or '1' if clean."
         },
         {
           role: 'user',
