@@ -6,6 +6,7 @@ const https = require('https');
 const { Server } = require('socket.io');
 const { MongoClient } = require('mongodb');
 const axios = require('axios');
+const { checkToxicClaude } = require('./toxicClaudeAI');
 
 let mongoReady = false;
 
@@ -21,10 +22,16 @@ async function checkToxicity(fullText) {
     if (result.toxic || result.insult || result.obscene || result.identity_attack) {
       return { valid: false, reason: 'Inappropriate language is not allowed' };
     }
+
+    const aiToxic = await checkWithOpenRouter(fullText);
+    if (aiToxic) {
+      return { valid: false, reason: 'Inappropriate language is not allowed' };
+    }
+
     return { valid: true };
   } catch (err) {
     console.error('⚠️ Toxicity API error:', err.message);
-    return { valid: false, reason: 'Sorry, the message moderation service is temporarily unavailable. Please try again later.'  };
+    return { valid: false, reason: 'Sorry, the message moderation service is temporarily unavailable. Please try again later.' };
   }
 }
 
