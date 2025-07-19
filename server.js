@@ -14,7 +14,7 @@ const app = express();
 
 async function checkToxicity(fullText) {
   try {
-    const res = await axios.post('http://tox-api:8002/check', { text: fullText });
+    const res = await axios.post('http://toxic-filter.chat.svc:8002/check', { text: fullText });
     const result = res.data;
 
     console.log('[🧪 TOXIC DEBUG]', fullText, '=>', result);
@@ -75,8 +75,8 @@ const server = https.createServer(sslOptions, app);
 const io = new Server(server);
 
 // 📡 Порт і Mongo URL
-const PORT = 8443;
-const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017';
+const PORT = 8444;
+const mongoUrl = process.env.MONGO_URL || 'MONGO_URI=mongodb://mongo.chat.svc:27017';
 const dbName = 'chatdb';
 const chatHistory = {}; // { roomId: [...] }
 
