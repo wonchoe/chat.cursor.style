@@ -2,7 +2,8 @@ const express = require('express');
 const crypto = require('crypto');
 const fs = require('fs');
 const tls = require('tls');
-const https = require('https');
+//const https = require('https');
+const http = require('http');
 const { Server } = require('socket.io');
 const { MongoClient } = require('mongodb');
 const axios = require('axios');
@@ -69,7 +70,8 @@ const sslOptions = {
 };
 
 // 🌐 HTTPS сервер
-const server = https.createServer(sslOptions, app);
+//const server = https.createServer(sslOptions, app);
+const server = http.createServer(app);
 
 // 🔌 Socket.IO поверх HTTPS
 const io = new Server(server);
@@ -202,32 +204,38 @@ function isSafeMongoInput(input) {
   );
 }
 
-
 const getClientIp = (socket) => {
-  const cfIp = socket.handshake.headers['cf-connecting-ip'];
-
-  if (!cfIp) {
-    const devIp = socket.handshake.address;
-    const allowedLocalIps = [
-      '::1',
-      '127.0.0.1',
-      '::ffff:127.0.0.1',
-      '::ffff:172.17.0.1', // іноді цей
-      '::ffff:172.18.0.1',
-      '::ffff:172.19.0.1', // твій кейс
-    ];
-
-    if (allowedLocalIps.includes(devIp)) {
-      console.warn('[DEV] ⚠️ No cf-connecting-ip, using dev IP:', devIp);
-      return devIp;
-    }
-
-    console.warn('[SECURITY] ❌ No cf-connecting-ip! Blocking connection.');
-    return null;
-  }
-
-  return cfIp;
+  return socket.handshake.headers['cf-connecting-ip'] ||
+         socket.handshake.headers['x-forwarded-for'] ||
+         socket.handshake.address ||
+         'unknown';
 };
+
+// const getClientIp = (socket) => {
+//   const cfIp = socket.handshake.headers['cf-connecting-ip'];
+
+//   if (!cfIp) {
+//     const devIp = socket.handshake.address;
+//     const allowedLocalIps = [
+//       '::1',
+//       '127.0.0.1',
+//       '::ffff:127.0.0.1',
+//       '::ffff:172.17.0.1', // іноді цей
+//       '::ffff:172.18.0.1',
+//       '::ffff:172.19.0.1', // твій кейс
+//     ];
+
+//     if (allowedLocalIps.includes(devIp)) {
+//       console.warn('[DEV] ⚠️ No cf-connecting-ip, using dev IP:', devIp);
+//       return devIp;
+//     }
+
+//     console.warn('[SECURITY] ❌ No cf-connecting-ip! Blocking connection.');
+//     return null;
+//   }
+
+//   return cfIp;
+// };
 
 
 function detectMaliciousInput(payload) {
@@ -538,6 +546,8 @@ function validateUserDataObject(userData) {
 
 
 io.on('connection', async (socket) => {
+  console.log(`🔌 New socket connected: ${socket.id}`);
+
   if (!mongoReady) {
     socket.emit('error', { reason: 'MongoDB not ready' });
     return socket.disconnect(true);
